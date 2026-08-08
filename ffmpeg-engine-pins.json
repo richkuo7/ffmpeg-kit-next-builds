@@ -2,7 +2,13 @@
   "$comment": [
     "Single source of truth for the FFmpeg engine the app links against (issue #270).",
     "build-ffmpeg-engine.ts, verify-ffmpeg-engine.ts and plugins/ffmpeg-kit-plugin.js all",
-    "read this file. Do not restate a version, a flag or a URL anywhere else.",
+    "read this file. Four copies of these values are sanctioned because a manifest, a",
+    "bundled screen and a document cannot read JSON at the moment they are used:",
+    "package.json's dependency URL, src/constants/Attributions.ts's repository URL,",
+    "docs/ffmpeg-engine-build.md's pin table, and the engine versions in CLAUDE.md and",
+    "docs/video-export-pipeline.md. Every one of them is coupled back to this file by",
+    "src/lib/ffmpeg-pin-copies.test.ts or src/lib/ffmpeg-attribution.test.ts, so a bump",
+    "that misses one fails the suite. Add no further copy.",
     "artifacts.*.sha256 identifies the bytes we published. It is not a bit-reproducibility",
     "check: FFmpeg embeds its configure line, and that line carries the build directory and",
     "a build-date stamp. Verification refuses anything that is not the published artifact."
