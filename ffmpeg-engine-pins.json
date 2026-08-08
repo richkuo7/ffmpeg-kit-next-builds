@@ -1,0 +1,131 @@
+{
+  "$comment": [
+    "Single source of truth for the FFmpeg engine the app links against (issue #270).",
+    "build-ffmpeg-engine.ts, verify-ffmpeg-engine.ts and plugins/ffmpeg-kit-plugin.js all",
+    "read this file. Do not restate a version, a flag or a URL anywhere else.",
+    "artifacts.*.sha256 identifies the bytes we published. It is not a bit-reproducibility",
+    "check: FFmpeg embeds its configure line, and that line carries the build directory and",
+    "a build-date stamp. Verification refuses anything that is not the published artifact."
+  ],
+  "engine": {
+    "project": "FFmpegKitNext",
+    "repository": "https://github.com/arthenica/ffmpeg-kit-next.git",
+    "tag": "v8.1.1",
+    "commit": "1022763a9488f0995db6505d4d4142347714758d",
+    "version": "8.1.1",
+    "license": "LGPL-3.0",
+    "reactNativePackage": "ffmpeg-kit-next-react-native",
+    "ffmpeg": {
+      "version": "8.1.2",
+      "sourceId": "n8.1.2"
+    },
+    "platformFloors": {
+      "ios": "12.1",
+      "androidApiLevel": 24
+    }
+  },
+  "distribution": {
+    "$comment": [
+      "Where we publish the build, and therefore where the LGPL corresponding-source",
+      "offer points. The consuming app repository is private, so an EAS build could not",
+      "fetch a release asset from it without a credential on the build path. This",
+      "repository is public, names no product, and carries only the LGPL work plus the",
+      "recipe.",
+      "Tags read v<upstream version>-<rebuild number> and are never moved: each names an",
+      "exact set of bytes, so any rebuild takes the next number.",
+      "The in-app attributions screen repeats this URL; src/lib/ffmpeg-attribution.test.ts",
+      "fails if the two ever disagree."
+    ],
+    "repository": "https://github.com/richkuo7/ffmpeg-kit-next-builds",
+    "releaseTag": "v8.1.1-1",
+    "assetUrl": "https://github.com/richkuo7/ffmpeg-kit-next-builds/releases/download/v8.1.1-1/ffmpeg-kit-next-react-native-8.1.1.tgz"
+  },
+  "build": {
+    "$comment": [
+      "No --enable-gpl anywhere. The GPL-only extras of the retired full-gpl build",
+      "(libx264, libx265, libxvid, vid.stab, rubberband) are unreferenced in this",
+      "codebase, so the flag buys nothing and costs the whole GPL exposure.",
+      "--enable-libass transitively enables freetype, fribidi, fontconfig, harfbuzz,",
+      "expat, libuuid and libiconv (scripts/function.sh, enable_library libass).",
+      "freetype and fontconfig are still listed explicitly so a future libass change",
+      "cannot silently drop the drawtext= dependency."
+    ],
+    "ios": {
+      "script": "./nix-ios.sh",
+      "profile": "xcode26",
+      "requiresXcodeAtLeast": 26,
+      "flags": [
+        "--xcframework",
+        "--disable-arm64e",
+        "--disable-arm64-mac-catalyst",
+        "--disable-x86-64-mac-catalyst",
+        "--enable-ios-videotoolbox",
+        "--enable-ios-audiotoolbox",
+        "--enable-ios-zlib",
+        "--enable-ios-bzip2",
+        "--enable-ios-libiconv",
+        "--enable-libass",
+        "--enable-freetype",
+        "--enable-fontconfig"
+      ],
+      "$archComment": [
+        "x86-64 is the Intel simulator slice. It is built even though no shipped app",
+        "uses it: without it, Xcode on an Intel Mac fails to find the framework headers",
+        "and reports a missing include, which reads like a broken install rather than a",
+        "missing slice. arm64e and Mac Catalyst stay off — the app ships to neither."
+      ],
+      "architectures": [
+        "arm64",
+        "arm64-simulator",
+        "x86-64"
+      ]
+    },
+    "android": {
+      "script": "./nix-android.sh",
+      "profile": "android-r27d",
+      "flags": [
+        "--disable-x86",
+        "--disable-arm-v7a",
+        "--enable-android-zlib",
+        "--enable-android-media-codec",
+        "--enable-libiconv",
+        "--enable-libass",
+        "--enable-freetype",
+        "--enable-fontconfig"
+      ],
+      "architectures": [
+        "arm-v7a-neon",
+        "arm64-v8a",
+        "x86-64"
+      ]
+    }
+  },
+  "usage": {
+    "$comment": [
+      "Why each enabled component exists. Every entry was swept out of src/ and app/;",
+      "nothing here is aspirational. Remove a component only after an on-device pass",
+      "over the stage that names it.",
+      "Decoders, demuxers and muxers the app needs (h264, hevc, mpeg4, aac, alac, mp3,",
+      "png, mjpeg, mov/mp4, wav, image2) are built into FFmpeg and need no flag."
+    ],
+    "libass": "subtitles= caption burn-in, including the ASS positioning tags the editorial presets emit",
+    "freetype": "drawtext= text overlays (src/lib/text-overlay.ts)",
+    "fontconfig": "font fallback for libass; drawtext itself uses fontfile=",
+    "ios-videotoolbox": "hevc_videotoolbox, the Stage 1 encoder on iOS",
+    "ios-audiotoolbox": "Apple AAC and ALAC paths",
+    "zlib": "PNG overlay stills and mov/mp4 handling",
+    "bzip2": "freetype and fontconfig support",
+    "libiconv": "text encoding for libass and fontconfig",
+    "android-media-codec": "Android hardware decode; the Android encoder path is tracked separately in issue #43"
+  },
+  "artifacts": {
+    "ios": {
+      "path": "ios/Frameworks",
+      "sha256": "e3087c65f2e5140e14e0687674e1d31dff8a4c8ae792bb0c960ae64e96a030bd"
+    },
+    "android": {
+      "path": "android/libs-maven",
+      "sha256": "1948bb7d464e73e8febe97f1f1250e002c71078e55ecdec96cf4ae938e34fd10"
+    }
+  }
+}
